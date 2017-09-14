@@ -1,0 +1,25 @@
+{
+  "name": "mc2p-js",
+  "authors": [
+    "MyChoice2Pay"
+  ],
+  "description": "JS library for the MyChoice2Pay API.",
+  "main": "dist/mc2p.min.js",
+  "keywords": [
+    "mychoice2pay",
+    "mc2p",
+    "rest",
+    "sdk",
+    "api",
+    "payments"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.mychoice2pay.com",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
