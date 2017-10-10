@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Example MC2P JS</title>
+    <script src="mc2p.js"></script>
+</head>
+<body>
+    <div id="gateways"></div>
+    <div id="html-div" style="visibility: hidden"></div>
+    <div id="card-div" style="visibility: hidden">
+        <form onsubmit=" return submitFunction()">
+            <input id="card-name" type="text" placeholder="Name">
+            <input id="card-number" type="text" placeholder="Number">
+            <input id="card-month" type="text" placeholder="Month">
+            <input id="card-year" type="text" placeholder="Year">
+            <input id="card-cvv" type="text" placeholder="CVV">
+            <input type="submit" value="Pay">
+        </form>
+    </div>
+    <script>
+        var mc2p = new MC2P('PUBLIC KEY', 'TRANSACTION TOKEN');
+
+        mc2p.getGateways(function (gatewaysData) {
+          var gatewaysDiv = document.getElementById('gateways');
+          var index = 0;
+          for(; index < gatewaysData.gateways.length; index++) {
+            var gateway = gatewaysData.gateways[index];
+            var gatewayElement = document.createElement('button');
+            gatewayElement.innerText = gateway.name;
+            gatewayElement.onclick = onClickFunction(gateway.code);
+            gatewaysDiv.appendChild(gatewayElement);
+          }
+        });
+
+        var onClickFunction = function (gatewayCode) {
+          return function () {
+            mc2p.selectGateway(gatewayCode);
+          }
+        };
+
+        var submitFunction = function () {
+          mc2p.sendCardDetails(function (data) {
+            alert(data);
+          });
+          return false;
+        };
+    </script>
+</body>
+</html>
