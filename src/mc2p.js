@@ -12,16 +12,18 @@
     this.API_HTML_URL = this.API_URL + 'html/';
     this.API_CARD_URL = this.API_URL + 'card/';
     this.API_SHARE_URL = this.API_URL + 'share/';
+    this.REDIRECT_URL = 'https://pay.mychoice2pay.com/#/' + this.token + '/redirect/';
     this.DIVVY_URL = 'https://pay.mychoice2pay.com/#/' + this.token + '/divvy';
 
     this.options = {
-      htmlDivId: (customOptions && customOptions.htmlDivId)|| 'html-div',
-      cardDivId: (customOptions && customOptions.cardDivId)|| 'card-div',
-      cardDataNameId: (customOptions && customOptions.cardDataNameId) || 'card-name',
-      cardDataNumberId: (customOptions && customOptions.cardDataNumberId) || 'card-number',
-      cardDataMonthId: (customOptions && customOptions.cardDataMonthId) || 'card-month',
-      cardDataYearId: (customOptions && customOptions.cardDataYearId) || 'card-year',
-      cardDataCVVId: (customOptions && customOptions.cardDataCVVId) || 'card-cvv'
+      notRedirectHtml: (customOptions && customOptions.notRedirectHtml) || false,
+      htmlDivId: (customOptions && customOptions.htmlDivId)|| 'mc2p-html-div',
+      cardDivId: (customOptions && customOptions.cardDivId)|| 'mc2p-card-div',
+      cardDataNameId: (customOptions && customOptions.cardDataNameId) || 'mc2p-card-name',
+      cardDataNumberId: (customOptions && customOptions.cardDataNumberId) || 'mc2p-card-number',
+      cardDataMonthId: (customOptions && customOptions.cardDataMonthId) || 'mc2p-card-month',
+      cardDataYearId: (customOptions && customOptions.cardDataYearId) || 'mc2p-card-year',
+      cardDataCVVId: (customOptions && customOptions.cardDataCVVId) || 'mc2p-card-cvv'
     };
 
     this.gatewaysList = [];
@@ -91,10 +93,14 @@
     for (; index < this.gatewaysList.length; index++) {
       if (this.gatewaysList[index].code === gatewayCode) {
         var gateway = this.gatewaysList[index];
-        if (gateway.form === 'html') {
-          this.html(gatewayCode, replaceAndSubmitHtml(htmlDiv, this));
-        } else if (gateway.form === 'card') {
+        if (gateway.form === 'card') {
           cardDiv.style.visibility = 'visible';
+        } else if (gateway.form === 'html') {
+          if (this.options.notRedirectHtml) {
+            this.html(gatewayCode, replaceAndSubmitHtml(htmlDiv, this));
+          } else {
+            document.location = this.REDIRECT_URL + gateway.code;
+          }
         } else if (gateway.form === 'shared') {
           document.location = this.DIVVY_URL;
         }
