@@ -17,8 +17,51 @@
             <input type="submit" value="Pay">
         </form>
     </div>
+    <div id="mc2p-html-div" style="visibility: hidden"></div>
+    <iframe id="mc2p-iframe" style="visibility: hidden"></iframe>
     <script>
-        var mc2p = new MC2P('PUBLIC KEY', 'TRANSACTION TOKEN');
+        var mc2p = new MC2P(
+          'PUBLIC KEY',
+          'TRANSACTION TOKEN',
+          {
+            // Some gateways like PayPal must be redirect to the gateway web page
+            // if false or not passed, the redirect will be using MyChoice2Pay Pay page (recommended)
+            // if true, the html div is used to put the html form and make submit
+            notRedirectHtml: false, // optional, default false
+
+            // ID of the html div in the html code, will be used to make the redirect
+            // if notRedirectHtml is false, is not necessary add this div in the html code
+            htmlDivId: 'mc2p-html-div', // optional, default 'mc2p-html-div'
+
+            // ID of the card div in the html code, will be used to find the card form
+            cardDivId: 'mc2p-card-div', // optional, default 'mc2p-card-div'
+
+            // ID of the card name input in the html code, will be used to get the card name
+            cardDataNameId: 'mc2p-card-name', // optional, default 'mc2p-card-name'
+
+            // ID of the card number input in the html code, will be used to get the card number
+            cardDataNumberId: 'mc2p-card-number', // optional, default 'mc2p-card-number'
+
+            // ID of the card month input in the html code, will be used to get the card month
+            cardDataMonthId: 'mc2p-card-month', // optional, default 'mc2p-card-month'
+
+            // ID of the card year input in the html code, will be used to get the card year
+            cardDataYearId: 'mc2p-card-year', // optional, default 'mc2p-card-year'
+
+            // ID of the card cvv input in the html code, will be used to get the card cvv
+            cardDataCVVId: 'mc2p-card-cvv', // optional, default 'mc2p-card-cvv'
+
+            // ID of the iFrame in the html code
+            // if false, is not necessary add the iFrame in the html code
+            // if string is passed, the iFrame is used to instead of redirect to gateway web page,
+            // show the gateway web page inside of the iFrame, the value notRedirectHtml must be false
+            iFrameId: 'mc2p-iframe', // optional, default false
+
+            // Dictionary of the gateways that can't use the iFrame option
+            // if passed, ex: {'PPI': false}, the gateway with the code 'PPI' not will use the iFrame option
+            iFrameGateways: {} // optional, default {}
+          }
+        );
 
         mc2p.getGateways(function (gatewaysData) {
           var gatewaysDiv = document.getElementById('gateways');
