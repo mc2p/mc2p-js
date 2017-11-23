@@ -23,7 +23,9 @@
       cardDataNumberId: (customOptions && customOptions.cardDataNumberId) || 'mc2p-card-number',
       cardDataMonthId: (customOptions && customOptions.cardDataMonthId) || 'mc2p-card-month',
       cardDataYearId: (customOptions && customOptions.cardDataYearId) || 'mc2p-card-year',
-      cardDataCVVId: (customOptions && customOptions.cardDataCVVId) || 'mc2p-card-cvv'
+      cardDataCVVId: (customOptions && customOptions.cardDataCVVId) || 'mc2p-card-cvv',
+      iFrameId: (customOptions && customOptions.iFrameId) || false,
+      iFrameGateways: (customOptions && customOptions.iFrameGateways) || {}
     };
 
     this.gatewaysList = [];
@@ -86,8 +88,19 @@
   MC2P.prototype.selectGateway = function (gatewayCode) {
     var htmlDiv = document.getElementById(this.options.htmlDivId);
     var cardDiv = document.getElementById(this.options.cardDivId);
-    htmlDiv.style.visibility = 'hidden';
-    cardDiv.style.visibility = 'hidden';
+    var iFrame = undefined;
+    if (this.options.iFrameId) {
+      iFrame = document.getElementById(this.options.iFrameId);
+    }
+    if (htmlDiv) {
+      htmlDiv.style.visibility = 'hidden';
+    }
+    if (cardDiv) {
+      cardDiv.style.visibility = 'hidden';
+    }
+    if (iFrame) {
+      iFrame.style.visibility = 'hidden';
+    }
 
     var index = 0;
     for (; index < this.gatewaysList.length; index++) {
@@ -99,10 +112,22 @@
           if (this.options.notRedirectHtml) {
             this.html(gatewayCode, replaceAndSubmitHtml(htmlDiv, this));
           } else {
-            document.location = this.REDIRECT_URL + gateway.code;
+            var redirectUrl = this.REDIRECT_URL + gateway.code;
+            if (iFrame && (!(gateway.code in this.options.iFrameGateways) || this.options.iFrameGateways[gateway.code])) {
+              iFrame.setAttribute('src', redirectUrl);
+              iFrame.style.visibility = 'visible';
+            } else {
+              document.location = redirectUrl;
+            }
           }
         } else if (gateway.form === 'shared') {
-          document.location = this.DIVVY_URL;
+          if (iFrame && (!(gateway.code in this.options.iFrameGateways) || this.options.iFrameGateways[gateway.code])) {
+            var divvyUrl = this.DIVVY_URL + '/iframe';
+            iFrame.setAttribute('src', divvyUrl);
+            iFrame.style.visibility = 'visible';
+          } else {
+            document.location = this.DIVVY_URL;
+          }
         }
         this.gatewaySelected = gateway;
         break;
