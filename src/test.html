@@ -7,7 +7,7 @@
 </head>
 <body>
     <div id="gateways"></div>
-    <div id="mc2p-card-div" style="visibility: hidden">
+    <div id="mc2p-card-div" style="display: none">
         <form onsubmit=" return submitFunction()">
             <input id="mc2p-card-name" type="text" placeholder="Name">
             <input id="mc2p-card-number" type="text" placeholder="Number">
@@ -17,8 +17,8 @@
             <input type="submit" value="Pay">
         </form>
     </div>
-    <div id="mc2p-html-div" style="visibility: hidden"></div>
-    <iframe id="mc2p-iframe" style="visibility: hidden"></iframe>
+    <div id="mc2p-html-div" style="display: none"></div>
+    <iframe id="mc2p-iframe" style="display: none"></iframe>
     <script>
         var mc2p = new MC2P(
           'PUBLIC KEY',

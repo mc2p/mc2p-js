@@ -11,6 +11,7 @@
     this.API_URL = 'https://api.mychoice2pay.com/v1/pay/' + this.token + '/';
     this.API_HTML_URL = this.API_URL + 'html/';
     this.API_CARD_URL = this.API_URL + 'card/';
+    this.API_ACCOUNT_URL = this.API_URL + 'account/';
     this.API_SHARE_URL = this.API_URL + 'share/';
     this.REDIRECT_URL = 'https://pay.mychoice2pay.com/#/' + this.token + '/redirect/';
     this.DIVVY_URL = 'https://pay.mychoice2pay.com/#/' + this.token + '/divvy';
@@ -25,17 +26,26 @@
       cardDataYearId: (customOptions && customOptions.cardDataYearId) || 'mc2p-card-year',
       cardDataCVVId: (customOptions && customOptions.cardDataCVVId) || 'mc2p-card-cvv',
       iFrameId: (customOptions && customOptions.iFrameId) || false,
-      iFrameGateways: (customOptions && customOptions.iFrameGateways) || {}
+      iFrameGateways: (customOptions && customOptions.iFrameGateways) || {},
+      sendCardDetailsCallback: (customOptions && customOptions.sendCardDetailsCallback) || undefined,
+      sendAccountDetailsCallback: (customOptions && customOptions.sendAccountDetailsCallback) || undefined
     };
 
     this.gatewaysList = [];
     this.gatewaySelected = null;
   };
 
+  var replaceHtml = function (htmlDiv, mc2p) {
+    return function (data) {
+      htmlDiv.innerHTML = data.html;
+      mc2p.showId(mc2p.options.htmlDivId);
+    };
+  };
+
   var replaceAndSubmitHtml = function (htmlDiv, mc2p) {
     return function (data) {
       htmlDiv.innerHTML = data.html;
-      htmlDiv.style.visibility = 'visible';
+      mc2p.showId(mc2p.options.htmlDivId);
       document.querySelector('#' + mc2p.options.htmlDivId + ' form').submit();
     };
   };
@@ -81,25 +91,24 @@
     return this.__request("POST", this.API_CARD_URL + gatewayCode + '/', data, callback);
   };
 
+  MC2P.prototype.account = function (gatewayCode, data, callback) {
+    return this.__request("POST", this.API_ACCOUNT_URL + gatewayCode + '/', data, callback);
+  };
+
   MC2P.prototype.share = function (data, callback) {
     return this.__request("POST", this.API_SHARE_URL, data, callback);
   };
 
   MC2P.prototype.selectGateway = function (gatewayCode) {
     var htmlDiv = document.getElementById(this.options.htmlDivId);
-    var cardDiv = document.getElementById(this.options.cardDivId);
     var iFrame = undefined;
     if (this.options.iFrameId) {
       iFrame = document.getElementById(this.options.iFrameId);
     }
-    if (htmlDiv) {
-      htmlDiv.style.visibility = 'hidden';
-    }
-    if (cardDiv) {
-      cardDiv.style.visibility = 'hidden';
-    }
-    if (iFrame) {
-      iFrame.style.visibility = 'hidden';
+    this.hideId(this.options.htmlDivId);
+    this.hideId(this.options.cardDivId);
+    if (this.options.iFrameId) {
+      this.hideId(this.options.iFrameId);
     }
 
     var index = 0;
@@ -107,7 +116,7 @@
       if (this.gatewaysList[index].code === gatewayCode) {
         var gateway = this.gatewaysList[index];
         if (gateway.form === 'card') {
-          cardDiv.style.visibility = 'visible';
+          this.showId(this.options.cardDivId);
         } else if (gateway.form === 'html') {
           if (this.options.notRedirectHtml) {
             this.html(gatewayCode, replaceAndSubmitHtml(htmlDiv, this));
@@ -115,16 +124,18 @@
             var redirectUrl = this.REDIRECT_URL + gateway.code;
             if (iFrame && (!(gateway.code in this.options.iFrameGateways) || this.options.iFrameGateways[gateway.code])) {
               iFrame.setAttribute('src', redirectUrl);
-              iFrame.style.visibility = 'visible';
+              this.showId(this.options.iFrameId);
             } else {
               document.location = redirectUrl;
             }
           }
+        } else if (gateway.form === 'account') {
+          this.html(gatewayCode, replaceHtml(htmlDiv, this));
         } else if (gateway.form === 'shared') {
           if (iFrame && (!(gateway.code in this.options.iFrameGateways) || this.options.iFrameGateways[gateway.code])) {
             var divvyUrl = this.DIVVY_URL + '/iframe';
             iFrame.setAttribute('src', divvyUrl);
-            iFrame.style.visibility = 'visible';
+            this.showId(this.options.iFrameId);
           } else {
             document.location = this.DIVVY_URL;
           }
@@ -136,6 +147,7 @@
   };
 
   MC2P.prototype.sendCardDetails = function (callback) {
+    callback = callback || this.options.sendCardDetailsCallback;
     var cardData = {
       'name': document.getElementById(this.options.cardDataNameId).value,
       'number': document.getElementById(this.options.cardDataNumberId).value,
@@ -144,6 +156,57 @@
       'verification_value': document.getElementById(this.options.cardDataCVVId).value
     };
     return this.card(this.gatewaySelected.code, cardData, callback);
+  };
+
+  MC2P.prototype.sendAccountDetails = function (callback) {
+    callback = callback || this.options.sendAccountDetailsCallback;
+    var htmlDiv = document.getElementById(this.options.htmlDivId);
+    if (htmlDiv) {
+      var accountForm = htmlDiv.getElementsByTagName('form');
+      if (accountForm.length > 0) {
+        accountForm = accountForm[0];
+        var entries = new FormData(accountForm).entries();
+        var accountData = {};
+        while(true) {
+          var iter = entries.next();
+          if (iter.done) {
+            break;
+          }
+          var value = iter.value;
+          accountData[value[0]] = value[1];
+        }
+        this.account(this.gatewaySelected.code, accountData, callback);
+      }
+    }
+    return false;
+  };
+
+  MC2P.prototype.hideClass = function (className) {
+    var classNameElements = document.getElementsByClassName(className);
+    for (var i = 0; i < classNameElements.length; i++) {
+      classNameElements[i].style.display = 'none';
+    }
+  };
+
+  MC2P.prototype.showClass = function (className) {
+    var classNameElements = document.getElementsByClassName(className);
+    for (var i = 0; i < classNameElements.length; i++) {
+      classNameElements[i].style.display = 'block';
+    }
+  };
+
+  MC2P.prototype.hideId = function (id) {
+    var idElement = document.getElementById(id);
+    if (idElement) {
+      idElement.style.display = 'none';
+    }
+  };
+
+  MC2P.prototype.showId = function (id) {
+    var idElement = document.getElementById(id);
+    if (idElement) {
+      idElement.style.display = 'block';
+    }
   };
 
   // Make module accessible:
