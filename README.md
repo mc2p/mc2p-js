@@ -10,6 +10,10 @@ MyChoice2Pay JS provides integration access to the MyChoice2Pay API.
 You can install using `bower`:
 
     bower install mc2p-js
+    
+or install using `npm`:
+
+    npm install mc2p-js
 
 or to install from source, download [mc2p.min.js](https://raw.github.com/mc2p/mc2p-js/master/dist/mc2p.min.js) and include it in your HTML document, this will add a global object called MC2P:
 

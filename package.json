@@ -1,0 +1,22 @@
+{
+  "name": "mc2p-js",
+  "version": "1.0.3",
+  "description": "JS library for the MyChoice2Pay API.",
+  "keywords": [
+    "mychoice2pay",
+    "mc2p",
+    "rest",
+    "sdk",
+    "api",
+    "payments"
+  ],
+  "homepage": "https://www.mychoice2pay.com",
+  "author": "MyChoice2Pay",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mc2p/mc2p-js.git"
+  },
+  "bugs:": "https://github.com/mc2p/mc2p-js/issues",
+  "main": "dist/mc2p.min.js",
+  "license": "MIT"
+}
