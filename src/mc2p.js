@@ -155,7 +155,17 @@
       'year': document.getElementById(this.options.cardDataYearId).value,
       'verification_value': document.getElementById(this.options.cardDataCVVId).value
     };
-    return this.card(this.gatewaySelected.code, cardData, callback);
+    var mc2p = this;
+    return this.card(this.gatewaySelected.code, cardData, function(data) {
+      if (data.html) {
+        var htmlDiv = document.getElementById(mc2p.options.htmlDivId);
+        replaceAndSubmitHtml(htmlDiv, mc2p)(data);
+      } else {
+        if (callback) {
+          callback(data);
+        }
+      }
+    });
   };
 
   MC2P.prototype.sendAccountDetails = function (callback) {
