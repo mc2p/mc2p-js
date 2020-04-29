@@ -1,6 +1,6 @@
 {
   "name": "mc2p-js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "JS library for the MyChoice2Pay API.",
   "keywords": [
     "mychoice2pay",
