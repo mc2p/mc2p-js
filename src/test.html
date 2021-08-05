@@ -59,7 +59,32 @@
 
             // Dictionary of the gateways that can't use the iFrame option
             // if passed, ex: {'PPI': false}, the gateway with the code 'PPI' not will use the iFrame option
-            iFrameGateways: {} // optional, default {}
+            iFrameGateways: {}, // optional, default {}
+
+            // If true this option is used instead of iFrame
+            // The gateway will be open in a window
+            openInWindow: true, // optional, default False
+
+            // Dictionary of the gateways that can't use the window option
+            // if passed, ex: {'PPI': false}, the gateway with the code 'PPI' not will use the window option
+            windowGateways: {}, // optional, default {},
+
+            // Callback called when the window is closed
+            // Receive a dictionary with a field called gateway with the code of the gateway opened in the window
+            windowsClosedCallback: function (data) { 
+              console.log(data.gateway);
+            },
+
+            // Callback called when the window finished
+            // Receive a dictionary with the following fields:
+            // - gateway: code of the gateway opened in the window
+            // - done: can be true or false, if true the transaction finished with the status done
+            // - cancel: can be true or false, if true the transaction finished with the status cancel
+            // - expired: can be true or false, if true the transaction finished with the status expired
+            // In any case, never use this callback to confirm the transaction in your side, use the notification
+            windowsFinishedCallback: function (data) { 
+              console.log(data);
+            }
           }
         );
 

@@ -8,6 +8,7 @@
   var MC2P = function(MC2PPublicKey, token, customOptions) {
     this.MC2PPublicKey = MC2PPublicKey;
     this.token = token;
+    this.PAY_ORIGIN_URL = 'https://pay.mychoice2pay.com';
     this.API_URL = 'https://api.mychoice2pay.com/v1/pay/' + this.token + '/';
     this.API_HTML_URL = this.API_URL + 'html/';
     this.API_CARD_URL = this.API_URL + 'card/';
@@ -28,7 +29,11 @@
       iFrameId: (customOptions && customOptions.iFrameId) || false,
       iFrameGateways: (customOptions && customOptions.iFrameGateways) || {},
       sendCardDetailsCallback: (customOptions && customOptions.sendCardDetailsCallback) || undefined,
-      sendAccountDetailsCallback: (customOptions && customOptions.sendAccountDetailsCallback) || undefined
+      sendAccountDetailsCallback: (customOptions && customOptions.sendAccountDetailsCallback) || undefined,
+      openInWindow: (customOptions && customOptions.openInWindow) || false,
+      windowGateways: (customOptions && customOptions.windowGateways) || {},
+      windowsClosedCallback: (customOptions && customOptions.windowsClosedCallback) || undefined,
+      windowsFinishedCallback: (customOptions && customOptions.windowsFinishedCallback) || undefined
     };
 
     this.gatewaysList = [];
@@ -122,7 +127,44 @@
             this.html(gatewayCode, replaceAndSubmitHtml(htmlDiv, this));
           } else {
             var redirectUrl = this.REDIRECT_URL + gateway.code;
-            if (iFrame && (!(gateway.code in this.options.iFrameGateways) || this.options.iFrameGateways[gateway.code])) {
+            if (this.options.openInWindow && (!(gateway.code in this.options.windowGateways) || this.options.windowGateways[gateway.code])) {
+              var width = 400;
+              var height = 560;
+              var left = (window.outerWidth - width) / 2;
+              var top = (window.outerHeight - height) / 2;
+              var wnd = window.open(
+                redirectUrl, 
+                gatewayCode, 
+                'width=' + width + ',height=' + height + ',scrollbars=NO,top=' + top + ',left=' + left
+              );
+              var mc2p = this;
+              var closedTimer = setInterval(function () { 
+                if(wnd.closed) {
+                  clearInterval(closedTimer);
+                  if (mc2p.options.windowsClosedCallback) {
+                    mc2p.options.windowsClosedCallback({
+                      gateway: gatewayCode 
+                    });
+                  }
+                }
+              }, 500);
+              window.addEventListener('message', function (event) {
+                if (event.data == 'MC2P_DONE' || event.data == 'MC2P_CANCEL' || event.data == 'MC2P_EXPIRED') {
+                  if (event.origin == mc2p.PAY_ORIGIN_URL) {
+                    clearInterval(closedTimer);
+                    wnd.close();
+                    if (mc2p.options.windowsFinishedCallback) {
+                      mc2p.options.windowsFinishedCallback({
+                        done: event.data == 'MC2P_DONE',
+                        cancel: event.data == 'MC2P_CANCEL',
+                        expired: event.data == 'MC2P_EXPIRED',
+                        gateway: gatewayCode 
+                      });
+                    }
+                  }
+                }	
+              });
+            } else if (iFrame && (!(gateway.code in this.options.iFrameGateways) || this.options.iFrameGateways[gateway.code])) {
               iFrame.setAttribute('src', redirectUrl);
               this.showId(this.options.iFrameId);
             } else {
